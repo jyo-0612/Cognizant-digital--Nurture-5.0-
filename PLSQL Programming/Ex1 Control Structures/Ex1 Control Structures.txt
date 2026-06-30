@@ -1,0 +1,136 @@
+SQL> CREATE TABLE Customers (
+  2      customer_id NUMBER PRIMARY KEY,
+  3      customer_name VARCHAR2(50),
+  4      age NUMBER,
+  5      balance NUMBER(10,2),
+  6      isVIP VARCHAR2(5)
+  7  );
+
+
+
+Table created.
+
+SQL> CREATE TABLE Loans (
+  2      loan_id NUMBER PRIMARY KEY,
+  3      customer_id NUMBER,
+  4      interest_rate NUMBER(5,2),
+  5      due_date DATE,
+  6      FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+  7  );
+
+
+
+Table created.
+
+
+SQL> INSERT INTO Customers VALUES (1, 'Ravi', 65, 12000, 'FALSE');
+
+1 row created.
+
+SQL> INSERT INTO Customers VALUES (2, 'Anita', 45, 8000, 'FALSE');
+
+1 row created.
+
+SQL> INSERT INTO Customers VALUES (3, 'Suresh', 70, 20000, 'FALSE');
+
+1 row created.
+
+SQL>
+SQL> INSERT INTO Loans VALUES (101, 1, 10.5, SYSDATE + 10);
+
+1 row created.
+
+SQL> INSERT INTO Loans VALUES (102, 2, 11.0, SYSDATE + 40);
+
+1 row created.
+
+SQL> INSERT INTO Loans VALUES (103, 3, 12.0, SYSDATE + 20);
+
+1 row created.
+
+SQL> COMMIT;
+
+Commit complete.
+
+
+SQL> BEGIN
+  2      FOR rec IN (SELECT c.customer_id, c.age, l.loan_id, l.interest_rate
+  3                  FROM Customers c
+  4                  JOIN Loans l ON c.customer_id = l.customer_id)
+  5      LOOP
+  6          IF rec.age > 60 THEN
+  7              UPDATE Loans
+  8              SET interest_rate = rec.interest_rate - 1
+  9              WHERE loan_id = rec.loan_id;
+ 10          END IF;
+ 11      END LOOP;
+ 12
+ 13      COMMIT;
+ 14  END;
+ 15  /
+
+
+PL/SQL procedure successfully completed.
+
+
+SQL> BEGIN
+  2      FOR rec IN (SELECT customer_id, balance FROM Customers)
+  3      LOOP
+  4          IF rec.balance > 10000 THEN
+  5              UPDATE Customers
+  6              SET isVIP = 'TRUE'
+  7              WHERE customer_id = rec.customer_id;
+  8          END IF;
+  9      END LOOP;
+ 10
+ 11      COMMIT;
+ 12  END;
+ 13  /
+
+
+PL/SQL procedure successfully completed.
+
+
+SQL> BEGIN
+  2      FOR rec IN (SELECT c.customer_name, l.loan_id, l.due_date
+  3                  FROM Customers c
+  4                  JOIN Loans l ON c.customer_id = l.customer_id)
+  5      LOOP
+  6          IF rec.due_date <= SYSDATE + 30 THEN
+  7              DBMS_OUTPUT.PUT_LINE(
+  8                  'Reminder: Loan ID ' || rec.loan_id ||
+  9                  ' for customer ' || rec.customer_name ||
+ 10                  ' is due on ' || rec.due_date
+ 11              );
+ 12          END IF;
+ 13      END LOOP;
+ 14  END;
+ 15  /
+
+
+PL/SQL procedure successfully completed.
+
+
+SQL> SET SERVEROUTPUT ON;
+SQL> BEGIN
+  2      FOR rec IN (SELECT c.customer_name, l.loan_id, l.due_date
+  3                  FROM Customers c
+  4                  JOIN Loans l ON c.customer_id = l.customer_id)
+  5      LOOP
+  6          IF rec.due_date <= SYSDATE + 30 THEN
+  7              DBMS_OUTPUT.PUT_LINE(
+  8                  'Reminder: Loan ID ' || rec.loan_id ||
+  9                  ' for customer ' || rec.customer_name ||
+ 10                  ' due on ' || rec.due_date
+ 11              );
+ 12          END IF;
+ 13      END LOOP;
+ 14  END;
+ 15  /
+
+Reminder: Loan ID 101 for customer Ravi due on 30-JUN-26
+Reminder: Loan ID 103 for customer Suresh due on 10-JUL-26
+
+PL/SQL procedure successfully completed.
+
+SQL>

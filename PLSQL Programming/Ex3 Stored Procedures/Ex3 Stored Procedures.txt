@@ -1,0 +1,139 @@
+
+CREATE TABLE Accounts (
+    account_id NUMBER PRIMARY KEY,
+    customer_name VARCHAR2(50),
+    account_type VARCHAR2(20),
+    balance NUMBER(10,2)
+);
+
+
+Employees Table
+CREATE TABLE Employees (
+    employee_id NUMBER PRIMARY KEY,
+    employee_name VARCHAR2(50),
+    department VARCHAR2(30),
+    salary NUMBER(10,2)
+);
+
+
+
+INSERT INTO Accounts VALUES (101,'Ravi','Savings',10000);
+INSERT INTO Accounts VALUES (102,'Anita','Savings',15000);
+INSERT INTO Accounts VALUES (103,'Suresh','Current',20000);
+
+COMMIT;
+
+Employees
+
+INSERT INTO Employees VALUES (1,'Rahul','IT',50000);
+INSERT INTO Employees VALUES (2,'Priya','HR',45000);
+INSERT INTO Employees VALUES (3,'Amit','IT',60000);
+
+COMMIT;
+
+Scenario 1: Process Monthly Interest
+Apply 1% interest to all savings accounts.
+
+Procedure
+CREATE OR REPLACE PROCEDURE ProcessMonthlyInterest
+IS
+BEGIN
+    UPDATE Accounts
+    SET balance = balance + (balance * 0.01)
+    WHERE account_type = 'Savings';
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Monthly Interest Processed Successfully');
+END;
+/
+Execute
+SET SERVEROUTPUT ON;
+
+EXEC ProcessMonthlyInterest;
+Check Output
+SELECT * FROM Accounts;
+Expected balances:
+
+101  Ravi   Savings   10100
+102  Anita  Savings   15150
+103  Suresh Current   20000
+
+Scenario 2: Update Employee Bonus
+
+CREATE OR REPLACE PROCEDURE UpdateEmployeeBonus(
+    p_department IN VARCHAR2,
+    p_bonus_percent IN NUMBER
+)
+IS
+BEGIN
+    UPDATE Employees
+    SET salary = salary + (salary * p_bonus_percent / 100)
+    WHERE department = p_department;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Bonus Updated Successfully');
+END;
+/
+
+Execute
+Give 10% bonus to IT employees:
+
+EXEC UpdateEmployeeBonus('IT',10);
+Check Output
+
+SELECT * FROM Employees;
+Expected:
+
+Rahul  IT  55000
+Amit   IT  66000
+Priya  HR  45000
+Scenario 3: Transfer Funds
+Transfer money between accounts after checking balance.
+
+Procedure
+CREATE OR REPLACE PROCEDURE TransferFunds(
+    p_from_account IN NUMBER,
+    p_to_account IN NUMBER,
+    p_amount IN NUMBER
+)
+IS
+    v_balance NUMBER;
+BEGIN
+    SELECT balance
+    INTO v_balance
+    FROM Accounts
+    WHERE account_id = p_from_account;
+
+    IF v_balance >= p_amount THEN
+
+        UPDATE Accounts
+        SET balance = balance - p_amount
+        WHERE account_id = p_from_account;
+
+        UPDATE Accounts
+        SET balance = balance + p_amount
+        WHERE account_id = p_to_account;
+
+        COMMIT;
+
+        DBMS_OUTPUT.PUT_LINE('Transfer Successful');
+
+    ELSE
+
+        DBMS_OUTPUT.PUT_LINE('Insufficient Balance');
+
+    END IF;
+END;
+/
+Execute
+Transfer ₹2000 from account 101 to 102:
+
+EXEC TransferFunds(101,102,2000);
+Check Result
+SELECT * FROM Accounts;
+Expected:
+
+101  Ravi   Savings   8100
+102  Anita  Savings   17150
