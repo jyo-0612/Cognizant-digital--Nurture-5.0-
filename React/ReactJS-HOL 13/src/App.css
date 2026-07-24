@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.column {
+  flex: 1;
+  padding: 0 20px;
+}
+
+/* Adds the vertical green lines between the columns, skipping the last column */
+.column:not(:last-child) {
+  border-right: 3px solid green;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px 0 5px 0;
+}
+
+p {
+  margin: 0 0 15px 0;
+  color: #333;
+}
